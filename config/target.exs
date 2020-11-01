@@ -1,5 +1,17 @@
 import Config
 
+wifi_ssid =
+  System.get_env("WIFI_SSID") ||
+    raise """
+    Environment variable WIFI_SSID is missing.
+    """
+
+wifi_psk =
+  System.get_env("WIFI_PSK") ||
+    raise """
+    Environment variable WIFI_PSK is missing.
+    """
+
 # Use shoehorn to start the main application. See the shoehorn
 # docs for separating out critical OTP applications such as those
 # involved with firmware updates.
@@ -30,7 +42,7 @@ config :nerves,
 
 keys =
   [
-    Path.join([System.user_home!(), ".ssh", "nerves_rsa.pub"])
+    Path.join([System.user_home!(), ".ssh", "id_rsa.pub"])
   ]
   |> Enum.filter(&File.exists?/1)
 
@@ -56,7 +68,20 @@ config :vintage_net,
        type: VintageNetEthernet,
        ipv4: %{method: :dhcp}
      }},
-    {"wlan0", %{type: VintageNetWiFi}}
+    {"wlan0",
+     %{
+       type: VintageNetWiFi,
+       vintage_net_wifi: %{
+         networks: [
+           %{
+             key_mgmt: :wpa_psk,
+             ssid: wifi_ssid,
+             psk: wifi_psk
+           }
+         ]
+       },
+       ipv4: %{method: :dhcp}
+     }}
   ]
 
 config :mdns_lite,

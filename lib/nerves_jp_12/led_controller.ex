@@ -5,6 +5,7 @@ defmodule NervesJp12.LedController do
 
   @on 1
   @off 0
+  @gpio_pin 20
 
   def start_link(state) do
     GenServer.start_link(__MODULE__, state, name: __MODULE__)
@@ -22,6 +23,12 @@ defmodule NervesJp12.LedController do
     GenServer.call(__MODULE__, {:pin, pin})
   end
 
+  @doc """
+  ## Examples
+
+      NervesJp12.LedController.blink(20, :timer.seconds(30), :timer.seconds(1))
+
+  """
   def blink(pin, duration, blinking_interval) do
     {:ok, pid} =
       Task.start(fn ->
@@ -48,7 +55,7 @@ defmodule NervesJp12.LedController do
   @impl true
   @spec init(state()) :: {:ok, state()}
   def init(_) do
-    output_pin_list = [60]
+    output_pin_list = [@gpio_pin]
 
     state =
       Enum.reduce(
